@@ -1,0 +1,41 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Done_BGScroller : MonoBehaviour
+{
+
+    public float scrollSpeed;
+    public float tileSizeZ;
+
+    private Vector3 startPosition;
+    private Done_GameController gameController;
+
+    void Start()
+    {
+        gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<Done_GameController>();
+        if (gameController != null)
+        {
+            gameController = gameController.GetComponent<Done_GameController>();
+        }
+        if (gameController == null)
+        {
+            Debug.Log("Cannot find 'GameController' script");
+        }
+        startPosition = transform.position;
+    }
+
+    void Update()
+    {
+        float newPosition = Mathf.Repeat(Time.time * scrollSpeed, tileSizeZ);
+        transform.position = startPosition + Vector3.forward * newPosition;
+
+        if (gameController.score >= 100)
+        {
+            if (scrollSpeed >= -10)
+            {
+                scrollSpeed -= Time.deltaTime * .25f;
+            }
+        }
+    }
+}
