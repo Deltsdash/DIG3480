@@ -1,0 +1,119 @@
+using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+
+[System.Serializable]
+public class Done_Boundary 
+{
+	public float xMin, xMax, zMin, zMax;
+}
+
+public class Done_PlayerController : MonoBehaviour
+{
+    public float speed;
+    public float tilt;
+    public Done_Boundary boundary;
+    public Text livesText;
+    private Done_GameController gamecontroller;
+
+    public GameObject shot;
+    public Transform shotSpawn;
+    public Transform shotSpawn2;
+    public Transform shotSpawn3;
+    public Transform shotSpawn4;
+    public Transform shotSpawn5;
+    public Transform shotSpawn6;
+    public float fireRate;
+    private int lives;
+    private bool weaponUpgrade;
+    public GameObject shot2;
+    public float fireRate2;
+
+
+    private float nextFire;
+
+    private void Start()
+    {
+        lives = 3;
+        UpdateLivesText();
+    }
+
+    void Update()
+    {
+        if (weaponUpgrade == false)
+            if (Input.GetButton("Fire1") && Time.time > nextFire)
+            {
+                nextFire = Time.time + fireRate;
+                // GameObject clone = //
+                Instantiate(shot, shotSpawn.position, shotSpawn.rotation);  //as GameObject;//
+                GetComponent<AudioSource>().Play();
+
+            }
+
+        if (weaponUpgrade == true)
+            if (Input.GetButton("Fire1") && Time.time > nextFire)
+            {
+                nextFire = Time.time + fireRate2;
+                Instantiate(shot2, shotSpawn2.position, Quaternion.identity);
+                Instantiate(shot2, shotSpawn3.position, Quaternion.identity);
+                Instantiate(shot2, shotSpawn4.position, Quaternion.identity);
+                Instantiate(shot2, shotSpawn5.position, Quaternion.identity);
+                Instantiate(shot2, shotSpawn6.position, Quaternion.identity);
+                GetComponent<AudioSource>().Play();
+            }
+    }
+
+    void FixedUpdate()
+    {
+        float moveHorizontal = Input.GetAxis("Horizontal");
+        float moveVertical = Input.GetAxis("Vertical");
+
+        Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
+        GetComponent<Rigidbody>().velocity = movement * speed;
+
+        GetComponent<Rigidbody>().position = new Vector3
+        (
+            Mathf.Clamp(GetComponent<Rigidbody>().position.x, boundary.xMin, boundary.xMax),
+            0.0f,
+            Mathf.Clamp(GetComponent<Rigidbody>().position.z, boundary.zMin, boundary.zMax)
+        );
+
+        GetComponent<Rigidbody>().rotation = Quaternion.Euler(0.0f, 0.0f, GetComponent<Rigidbody>().velocity.x * -tilt);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            other.gameObject.SetActive(false);
+            lives = lives - 1;
+            if (lives <= 0)
+            {
+                Destroy(gameObject, .1f);
+            }
+            UpdateLivesText();
+        }
+        if (other.gameObject.CompareTag("Pickup"))
+        {
+            other.gameObject.SetActive(false);
+            weaponUpgrade = true;
+        }
+    }
+   private void setLives(int newLives)
+    {
+        lives = newLives;
+        UpdateLivesText();
+        if (lives <= 0)
+        {
+            gamecontroller.GameOver();
+        }
+    }
+
+
+    private void UpdateLivesText()
+    {
+        livesText.text = "Lives: " + lives.ToString();
+        if (lives <= 0)
+            gamecontroller.GameOver();
+    }
+}
